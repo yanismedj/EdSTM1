@@ -108,10 +108,11 @@ par(mfrow=c(1,1))
 - L'ACF montre une décroissance rapide après le premier retard, ce qui est typique d'un MA(1).
 - La PACF présente une seule valeur significative au premier retard, confirmant la structure MA(1).
 ```
+```{r ma1}
 # Estimation du modèle MA(1)
 model_ma <- arima(y_ma, order=c(0,0,1))
 summary(model_ma)
-
+```
  **Observation :**
  - Le coefficient estimé pour θ est proche de la valeur de simulation 0.5.
  - La significativité statistique est vérifiée p-value < 0.05.
