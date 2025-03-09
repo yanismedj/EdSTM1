@@ -388,9 +388,9 @@ acf(residuals_var[,2], main='ACF Résidu y2', col='red')
 pacf(residuals_var[,2], main='PACF Résidu y2', col='red')
 par(mfrow=c(1,1))
 ```
-# **Observation :**
-# - l'ACF et la PACF des résidus montrent encore des corrélations significatives.
-# - Un modèle VAR(2) ou plus pourrait être nécessaire.
+ **Observation :**
+ - l'ACF et la PACF des résidus montrent encore des corrélations significatives.
+ - Un modèle VAR(2) ou plus pourrait être nécessaire.
 
 ```{r}
 # stationnarité des résidus
