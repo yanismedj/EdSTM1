@@ -17,7 +17,7 @@ output: pdf_document
 ***Il faut pouvoir compiler ce document .rmd au format .pdf ou .html (cf. l'item "output" dans l'entête)***
 
 ## Packages
-```{r bibliotheques}
+```{r}
 
 # Chargement des bibliothèques :
 
@@ -37,7 +37,7 @@ install.packages("vars")
   b. Représenter graphiquement cette série et superposer un autre bruit blanc gaussien de taille identique.
   c. Tracer l'ACF et la PACF théoriques et estimées ; comparer.
 
-```{r bruit_blanc}
+```{r}
 # nombre d'observations
 n <- 200  
 
@@ -56,7 +56,7 @@ legend("topright", legend=c("Bruit Blanc 1", "Bruit Blanc 2"), col=c("blue", "re
  - Il n'y a pas de schéma clair, ce qui est caractéristique d'un bruit blanc.
  - Les variations sont erratiques et non corrélées.
 
-```{r bruit_blanc}
+```{r}
 # Analyse des corrélations
 par(mfrow=c(2,2)) 
 acf(bruit_Blanc1, main='ACF Bruit Blanc 1')  
@@ -81,7 +81,7 @@ par(mfrow=c(1,1))
   c. Estimer le modèle MA(1) sur les données simulées.
   d. Tester les résidus.
 
-```{r ma1}
+```{r}
 # paramètre du modèle
 theta <- 0.5  
 
@@ -97,7 +97,8 @@ plot(y_ma, type='l', main='Processus MA(1)')
  **Observation :**
  - Contrairement au bruit blanc, ici les valeurs semblent plus lissées.
  - On observe une certaine persistance des valeurs (2) .
-```{r ma1}
+
+```{r}
 # Analyse de l'ACF et PACF
 par(mfrow=c(1,2))
 acf(y_ma, main='ACF MA(1)')
@@ -108,7 +109,8 @@ par(mfrow=c(1,1))
 - L'ACF montre une décroissance rapide après le premier retard, ce qui est typique d'un MA(1).
 - La PACF présente une seule valeur significative au premier retard, confirmant la structure MA(1).
 ```
-```{r ma1}
+
+```{r}
 # Estimation du modèle MA(1)
 model_ma <- arima(y_ma, order=c(0,0,1))
 summary(model_ma)
@@ -117,7 +119,7 @@ summary(model_ma)
  - Le coefficient estimé pour θ est proche de la valeur de simulation 0.5.
  - La significativité statistique est vérifiée p-value < 0.05.
 
-```{r ma1}
+```{r}
 # Test des résidus
 residuals_ma <- residuals(model_ma)
 par(mfrow=c(2,2))
@@ -140,7 +142,8 @@ par(mfrow=c(1,1))
   b. Tracer l'ACF et la PACF théoriques et estimées ; comparer.
   c. Estimer le modèle AR(1) sur les données simulées.
   d. Tester les résidus.
-```{r ar1}
+
+```{r}
 # paramètre du modèle
 phi <- 0.7  
 
@@ -154,7 +157,7 @@ plot(y_ar, type='l', main='Processus AR(1)')
  - Les valeurs montrent une certaine inertie : une forte valeur positive tend à être suivie par une autre forte valeur positive.
  - Cela traduit une dépendance temporelle plus marquée que dans le MA(1).
 
-```{r ar1}
+```{r}
 # Analyse ACF et PACF
 par(mfrow=c(1,2))
 acf(y_ar, main='ACF AR(1)')
@@ -164,7 +167,8 @@ par(mfrow=c(1,1))
 **Observation :**
 - L'ACF décroît lentement et montre une mémoire à long terme, typique d'un AR(1).
 - La PACF a un seul pic important au premier retard.
-```{r ar1}
+
+```{r}
 # Estimation du modèle AR(1)
 model_ar <- arima(y_ar, order=c(1,0,0))
 summary(model_ar)
@@ -173,7 +177,7 @@ summary(model_ar)
  - Le coefficient estimé pour φ doit est proche de 0.7.
  - p value < 0.05.
 
-```{r ar1}
+```{r}
  Test des résidus
 residuals_ar <- residuals(model_ar)
 par(mfrow=c(2,2))
@@ -196,7 +200,7 @@ par(mfrow=c(1,1))
   b. Tracer l'ACF et la PACF théoriques et estimées ; comparer.
   c. Estimer le modèle ARMA(1,1) sur les données simulées.
   d. Tester les résidus.
-```{r arma1}
+```{r}
 # paramètres du modèle
 phi <- 0.5  # ---> Coefficient autorégressif
 theta <- -0.3  # --> Coefficient de moyenne mobile
@@ -212,7 +216,7 @@ plot(y_arma, type='l', main='Processus ARMA(1,1)')
  - La série présente des fluctuations qui sont plus complexes et plus denses que celles observées dans AR(1) et MA(1).
  - Resultat de l'effet MA et de l'effet AR.
 
-```{r arma1}
+```{r}
 # Analyse de l'ACF et PACF
 par(mfrow=c(1,2))
 acf(y_arma, main='ACF ARMA(1,1)')
@@ -223,7 +227,7 @@ par(mfrow=c(1,1))
  - L'ACF ne décroît pas aussi vite que dans un MA(1), mais elle montre aussi un effet mémoire.
  - La PACF montre un premier pic important, suivi d’une décroissance plus douce.
 
-```{r arma1}
+```{r}
 # Estimation du modèle ARMA(1,1)
 model_arma <- arima(y_arma, order=c(1,0,1))
 summary(model_arma)
@@ -232,7 +236,7 @@ summary(model_arma)
  - Pvalue <0.05
  - Les coefficients estimés sont proche des valeurs théoriques 0,5 et 0,3.
 
-```{r arma1}
+```{r}
 # Test des résidus
 par(mfrow=c(1,2))
 acf(residuals(model_arma), main='ACF des résidus ARMA(1,1)')
@@ -255,7 +259,7 @@ par(mfrow=c(1,1))
   b. Représenter graphiquement la série simulée.
   c. Calculer et tracer l'ACF et la PACF de la série simulée. Comparer les résultats avec ceux d'une série stationnaire.
   d. Commenter sur les propriétés de la marche aléatoire et son implication pour la non-stationnarité.
-```{r Marche_aleatoire}
+```{r}
 # Simulation d'une marche aléatoire
 y_rw <- cumsum(rnorm(n)) 
 
@@ -266,7 +270,7 @@ plot(y_rw, type='l', main='Marche Aléatoire')
  - Contrairement aux séries précédentes, on observe une tendance apparente sans retour vers une moyenne.
  - la série n'est pas stationnaire.
 
-```{r Marche_aleatoire}
+```{r}
 # Analyse de l'ACF et PACF
 par(mfrow=c(1,2))
 acf(y_rw, main='ACF Marche Aléatoire')
@@ -288,7 +292,7 @@ par(mfrow=c(1,1))
   c. Ajuster un modèle de régression linéaire pour extraire la tendance et analyser les résidus.
   d. Discuter de l'effet de la tendance sur la stationnarité de la série.
 
-```{r trend_drift}
+```{r}
 t <- 1:n
 # Simulation du processus avec tendance et dérive
 y_trend <- 0.5 + 0.1*t + rnorm(n)
@@ -299,14 +303,14 @@ plot(t, y_trend, type='l', main='Processus avec Tendance et Dérive')
  - Contrairement aux séries stationnaires précédentes, on observe ici une tendance clairement croissante.
  - La série est non stationnaire.
 
-```{r trend_drift}
+```{r}
 # Ajustement d'un modèle de régression linéaire
 lm_model <- lm(y_trend ~ t)
 summary(lm_model)
 ```
  **Observation :**
  - La pente de la régression (t) est significative, ce qui confirme la présence d'une tendance.
-```{r trend_drift}
+```{r}
 #  résidus et analyse de stationnarité
 residuals_trend <- residuals(lm_model)
 plot(t, residuals_trend, type='l', main='Résidus après suppression de la tendance')
@@ -314,7 +318,7 @@ plot(t, residuals_trend, type='l', main='Résidus après suppression de la tenda
  **Observation :**
  - les résidus apparaissent stationnaires, cela signifie que seule la tendance rend la série non stationnaire.
 
-```{r trend_drift}
+```{r}
 # Test de Dickey-Fuller 
 adf_test <- adf.test(residuals_trend)
 adf_test
@@ -341,7 +345,7 @@ adf_test
   e. Tracer l'ACF et la PACF des résidus pour chaque série, et tester leur stationnarité.
   f. Discuter de l'utilité des modèles VAR pour analyser les relations entre plusieurs séries temporelles dans un contexte économique.
 
-```{r var1}
+```{r}
 # paramètres
 n <- 200  
 set.seed(123)  
@@ -365,7 +369,7 @@ legend("topright", legend=c("y1", "y2"), col=c("blue", "red"), lty=1:2)
  - Les deux séries semblent suivre des dynamiques dépendantes.
  - On peut observer des cycles et des influences croisées entre les variables.
 
-```{r var1}
+```{r}
 # Estimation du modèle
 var_model <- VAR(data_var, p=1)
 summary(var_model)
@@ -374,7 +378,7 @@ summary(var_model)
  - Les coefficients estimés sont comparés aux valeurs  utilisées pour la simulation.
  - P value <0,05 : nous indique des relations fortes entre les variables.
 
-```{r var1}
+```{r}
 # Analyse des résidus
 residuals_var <- residuals(var_model)
 par(mfrow=c(2,2))
@@ -388,7 +392,7 @@ par(mfrow=c(1,1))
 # - l'ACF et la PACF des résidus montrent encore des corrélations significatives.
 # - Un modèle VAR(2) ou plus pourrait être nécessaire.
 
-```{r var1}
+```{r}
 # stationnarité des résidus
 adf_test_y1 <- adf.test(residuals_var[,1])
 adf_test_y2 <- adf.test(residuals_var[,2])
