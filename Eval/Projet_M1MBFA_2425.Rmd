@@ -14,7 +14,6 @@ output: pdf_document
   - *insérant des chunks de code après chaque question ou chaque section*
   - *commentant (**en rédigeant**) chaque résultat*
 
-***Il faut pouvoir compiler ce document .rmd au format .pdf ou .html (cf. l'item "output" dans l'entête)***
 
 ## Packages
 
