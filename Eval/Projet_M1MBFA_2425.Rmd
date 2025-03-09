@@ -1,6 +1,6 @@
 ---
 title: "Économétrie des Séries Temporelles"
-author: "NOM, Prénom, Numéro étudiant"
+author: "Medjnoun, Yanis, 23008377"
 date: "Projet M1 MBFA -- 2024/2025"
 output: pdf_document
 #output: html_document
@@ -17,12 +17,18 @@ output: pdf_document
 ***Il faut pouvoir compiler ce document .rmd au format .pdf ou .html (cf. l'item "output" dans l'entête)***
 
 ## Packages
-
 ```{r bibliotheques}
-# Les library utilisées devront toutes être dans ce chunk
-library()
-library()
+
+# Chargement des bibliothèques :
+
+install.packages("ggplot2")
+install.packages("forecast")
+install.packages("tseries")
+install.packages("vars")
+    
 ```
+
+
 
 ## 1. Bruit Blanc
 
@@ -30,6 +36,40 @@ library()
   (***IMPORTANT** : vous garderez le même nombre d'observations, $n$, tout au long du projet*).
   b. Représenter graphiquement cette série et superposer un autre bruit blanc gaussien de taille identique.
   c. Tracer l'ACF et la PACF théoriques et estimées ; comparer.
+
+```{r bruit_blanc}
+# nombre d'observations
+n <- 200  
+
+# Simulation de deux bruits blancs gaussiens 
+set.seed(132)  
+bruit_Blanc1 <- rnorm(n)  
+bruit_Blanc2 <- rnorm(n)  
+
+# Représentation graphique 
+plot(bruit_Blanc1, type='l', col='blue', main='Bruit Blanc Gaussien')
+lines(bruit_Blanc2, col='red')  
+legend("topright", legend=c("Bruit Blanc 1", "Bruit Blanc 2"), col=c("blue", "red"), lty=1)  
+```
+ **Observation :**
+ - On observe que les deux séries fluctuent de manière aléatoire autour de zéro, sans tendance apparente.
+ - Il n'y a pas de schéma clair, ce qui est caractéristique d'un bruit blanc.
+ - Les variations sont erratiques et non corrélées.
+
+```{r bruit_blanc}
+# Analyse des corrélations
+par(mfrow=c(2,2)) 
+acf(bruit_Blanc1, main='ACF Bruit Blanc 1')  
+pacf(bruit_Blanc1, main='PACF Bruit Blanc 1')  
+acf(bruit_Blanc2, main='ACF Bruit Blanc 2')
+pacf(bruit_Blanc2, main='PACF Bruit Blanc 2')
+par(mfrow=c(1,1))  
+```
+ **Observation :**
+- L'ACF montre que toutes les valeurs sont proches de zéro, confirmant l'absence d'autocorrélation.
+- La PACF ne présente aucun schéma significatif, ce qui correspond au comportement d'un bruit blanc.
+
+
 
 ## 2. Processus Stationnaire
 
@@ -41,6 +81,57 @@ library()
   c. Estimer le modèle MA(1) sur les données simulées.
   d. Tester les résidus.
 
+```{r ma1}
+# paramètre du modèle
+theta <- 0.5  
+
+# Simulation du processus MA(1)
+y_ma <- filter(rnorm(n), filter=c(theta, 1), method="convolution")
+y_ma <- na.omit(y_ma)
+sum(is.na(y_ma)) 
+# Visualisation
+plot(y_ma, type='l', main='Processus MA(1)')
+
+```
+
+ **Observation :**
+ - Contrairement au bruit blanc, ici les valeurs semblent plus lissées.
+ - On observe une certaine persistance des valeurs (2) .
+```{r ma1}
+# Analyse de l'ACF et PACF
+par(mfrow=c(1,2))
+acf(y_ma, main='ACF MA(1)')
+pacf(y_ma, main='PACF MA(1)')
+par(mfrow=c(1,1))
+```
+ **Observation :**
+- L'ACF montre une décroissance rapide après le premier retard, ce qui est typique d'un MA(1).
+- La PACF présente une seule valeur significative au premier retard, confirmant la structure MA(1).
+```
+# Estimation du modèle MA(1)
+model_ma <- arima(y_ma, order=c(0,0,1))
+summary(model_ma)
+
+ **Observation :**
+ - Le coefficient estimé pour θ est proche de la valeur de simulation 0.5.
+ - La significativité statistique est vérifiée p-value < 0.05.
+
+```{r ma1}
+# Test des résidus
+residuals_ma <- residuals(model_ma)
+par(mfrow=c(2,2))
+plot(residuals_ma, type='l', main='Résidus du modèle MA(1)', col='red')
+hist(residuals_ma, main='Histogramme des résidus', col='gray')
+acf(residuals_ma, main='ACF des résidus MA(1)', col='red')
+pacf(residuals_ma, main='PACF des résidus MA(1)', col='red')
+par(mfrow=c(1,1))
+```
+ **Observation :**
+ - Les résidus sont distribués normalement et ne présentet pas d'autocorrélation.
+ - l'ACF et la PACF des résidus ne montrent pas de structure particulière.
+
+
+
 ### AR(1)
   a. Simuler et tracer $n$ observations d'un processus autorégressif
   $$y_t = \varphi y_{t-1} +  \varepsilon_{t},$$
@@ -48,6 +139,54 @@ library()
   b. Tracer l'ACF et la PACF théoriques et estimées ; comparer.
   c. Estimer le modèle AR(1) sur les données simulées.
   d. Tester les résidus.
+```{r ar1}
+# paramètre du modèle
+phi <- 0.7  
+
+# Simulation du processus AR(1)
+y_ar <- arima.sim(n=n, list(ar=phi))
+
+# Visualisation
+plot(y_ar, type='l', main='Processus AR(1)')
+```
+ **Observation :**
+ - Les valeurs montrent une certaine inertie : une forte valeur positive tend à être suivie par une autre forte valeur positive.
+ - Cela traduit une dépendance temporelle plus marquée que dans le MA(1).
+
+```{r ar1}
+# Analyse ACF et PACF
+par(mfrow=c(1,2))
+acf(y_ar, main='ACF AR(1)')
+pacf(y_ar, main='PACF AR(1)')
+par(mfrow=c(1,1))
+```
+**Observation :**
+- L'ACF décroît lentement et montre une mémoire à long terme, typique d'un AR(1).
+- La PACF a un seul pic important au premier retard.
+```{r ar1}
+# Estimation du modèle AR(1)
+model_ar <- arima(y_ar, order=c(1,0,0))
+summary(model_ar)
+```
+ **Observation :**
+ - Le coefficient estimé pour φ doit est proche de 0.7.
+ - p value < 0.05.
+
+```{r ar1}
+ Test des résidus
+residuals_ar <- residuals(model_ar)
+par(mfrow=c(2,2))
+plot(residuals_ar, type='l', main='Résidus du modèle AR(1)', col='red')
+hist(residuals_ar, main='Histogramme des résidus', col='gray')
+acf(residuals_ar, main='ACF des résidus AR(1)', col='red')
+pacf(residuals_ar, main='PACF des résidus AR(1)', col='red')
+par(mfrow=c(1,1))
+```
+ **Observation :**
+ - Les résidus sont distribués comme un bruit blanc.
+ - L'ACF et la PACF des résidus montrent des corrélations significatives, cela signifie que le modèle AR(1) ne capture pas toute les données.
+
+
 
 ### ARMA(1,1)
   a. Simuler et tracer $n$ observations d'un processus autorégressif à moyenne mobile
@@ -56,6 +195,54 @@ library()
   b. Tracer l'ACF et la PACF théoriques et estimées ; comparer.
   c. Estimer le modèle ARMA(1,1) sur les données simulées.
   d. Tester les résidus.
+```{r arma1}
+# paramètres du modèle
+phi <- 0.5  # ---> Coefficient autorégressif
+theta <- -0.3  # --> Coefficient de moyenne mobile
+
+# Simulation du processus ARMA(1,1)
+y_arma <- arima.sim(n=n, list(ar=phi, ma=theta))
+
+# Visualisation
+plot(y_arma, type='l', main='Processus ARMA(1,1)')
+```
+
+ **Observation :**
+ - La série présente des fluctuations qui sont plus complexes et plus denses que celles observées dans AR(1) et MA(1).
+ - Resultat de l'effet MA et de l'effet AR.
+
+```{r arma1}
+# Analyse de l'ACF et PACF
+par(mfrow=c(1,2))
+acf(y_arma, main='ACF ARMA(1,1)')
+pacf(y_arma, main='PACF ARMA(1,1)')
+par(mfrow=c(1,1))
+```
+ **Observation :**
+ - L'ACF ne décroît pas aussi vite que dans un MA(1), mais elle montre aussi un effet mémoire.
+ - La PACF montre un premier pic important, suivi d’une décroissance plus douce.
+
+```{r arma1}
+# Estimation du modèle ARMA(1,1)
+model_arma <- arima(y_arma, order=c(1,0,1))
+summary(model_arma)
+```
+ **Observation :**
+ - Pvalue <0.05
+ - Les coefficients estimés sont proche des valeurs théoriques 0,5 et 0,3.
+
+```{r arma1}
+# Test des résidus
+par(mfrow=c(1,2))
+acf(residuals(model_arma), main='ACF des résidus ARMA(1,1)')
+pacf(residuals(model_arma), main='PACF des résidus ARMA(1,1)')
+par(mfrow=c(1,1))
+```
+ **Observation :**
+ -  les résidus se comporte comme un bruit blanc.
+ - L'ACF et la PACF des résidus doivent sont proches de zéro.
+
+
 
 ## 3. Processus Non-Stationnaire
 
@@ -67,6 +254,29 @@ library()
   b. Représenter graphiquement la série simulée.
   c. Calculer et tracer l'ACF et la PACF de la série simulée. Comparer les résultats avec ceux d'une série stationnaire.
   d. Commenter sur les propriétés de la marche aléatoire et son implication pour la non-stationnarité.
+```{r Marche_aleatoire}
+# Simulation d'une marche aléatoire
+y_rw <- cumsum(rnorm(n)) 
+
+# Visualisation
+plot(y_rw, type='l', main='Marche Aléatoire')
+```
+ **Observation :**
+ - Contrairement aux séries précédentes, on observe une tendance apparente sans retour vers une moyenne.
+ - la série n'est pas stationnaire.
+
+```{r Marche_aleatoire}
+# Analyse de l'ACF et PACF
+par(mfrow=c(1,2))
+acf(y_rw, main='ACF Marche Aléatoire')
+pacf(y_rw, main='PACF Marche Aléatoire')
+par(mfrow=c(1,1))
+```
+ **Observation :**
+ - L'ACF montre une décroissance très lente, ce qui est un signe fort de non-stationnarité.
+ - La PACF indique une dépendance temporelle élevée.
+
+
 
 ### Tendance et Dérive
 
@@ -76,6 +286,43 @@ library()
   b. Représenter graphiquement la série simulée et sa tendance.
   c. Ajuster un modèle de régression linéaire pour extraire la tendance et analyser les résidus.
   d. Discuter de l'effet de la tendance sur la stationnarité de la série.
+
+```{r trend_drift}
+t <- 1:n
+# Simulation du processus avec tendance et dérive
+y_trend <- 0.5 + 0.1*t + rnorm(n)
+# Visualisation
+plot(t, y_trend, type='l', main='Processus avec Tendance et Dérive')
+```
+ **Observation :**
+ - Contrairement aux séries stationnaires précédentes, on observe ici une tendance clairement croissante.
+ - La série est non stationnaire.
+
+```{r trend_drift}
+# Ajustement d'un modèle de régression linéaire
+lm_model <- lm(y_trend ~ t)
+summary(lm_model)
+```
+ **Observation :**
+ - La pente de la régression (t) est significative, ce qui confirme la présence d'une tendance.
+```{r trend_drift}
+#  résidus et analyse de stationnarité
+residuals_trend <- residuals(lm_model)
+plot(t, residuals_trend, type='l', main='Résidus après suppression de la tendance')
+```
+ **Observation :**
+ - les résidus apparaissent stationnaires, cela signifie que seule la tendance rend la série non stationnaire.
+
+```{r trend_drift}
+# Test de Dickey-Fuller 
+adf_test <- adf.test(residuals_trend)
+adf_test
+```
+ **Observation :**
+ - la p-value du test est inférieure à 0.05, on peut rejeter l'hypothèse de non-stationnarité des résidus.
+ - Ce qui confirme bien que la série est non stationnaire uniquement à cause de la tendance linéaire.
+
+
 
 ## 4. Processus VAR
 
@@ -92,3 +339,65 @@ library()
   d. Présenter les coefficients estimés et interpréter les relations dynamiques entre les deux séries.
   e. Tracer l'ACF et la PACF des résidus pour chaque série, et tester leur stationnarité.
   f. Discuter de l'utilité des modèles VAR pour analyser les relations entre plusieurs séries temporelles dans un contexte économique.
+
+```{r var1}
+# paramètres
+n <- 200  
+set.seed(123)  
+y1 <- numeric(n)
+y2 <- numeric(n)
+y1[1] <- rnorm(1)  
+y2[1] <- rnorm(1)
+# Simulation du modèle
+for (t in 2:n) {
+  y1[t] <- 0.5 * y1[t-1] + 0.2 * y2[t-1] + rnorm(1)
+  y2[t] <- 0.3 * y1[t-1] + 0.4 * y2[t-1] + rnorm(1)
+}
+
+data_var <- data.frame(y1, y2)
+
+# Visualisation
+plot.ts(data_var, main='Séries simulées VAR(1)', col=c('blue', 'red'), lty=1:2)
+legend("topright", legend=c("y1", "y2"), col=c("blue", "red"), lty=1:2)
+```
+ **Observation :**
+ - Les deux séries semblent suivre des dynamiques dépendantes.
+ - On peut observer des cycles et des influences croisées entre les variables.
+
+```{r var1}
+# Estimation du modèle
+var_model <- VAR(data_var, p=1)
+summary(var_model)
+```
+ **Observation :**
+ - Les coefficients estimés sont comparés aux valeurs  utilisées pour la simulation.
+ - P value <0,05 : nous indique des relations fortes entre les variables.
+
+```{r var1}
+# Analyse des résidus
+residuals_var <- residuals(var_model)
+par(mfrow=c(2,2))
+acf(residuals_var[,1], main='ACF Résidu y1', col='blue')
+pacf(residuals_var[,1], main='PACF Résidu y1', col='blue')
+acf(residuals_var[,2], main='ACF Résidu y2', col='red')
+pacf(residuals_var[,2], main='PACF Résidu y2', col='red')
+par(mfrow=c(1,1))
+```
+# **Observation :**
+# - l'ACF et la PACF des résidus montrent encore des corrélations significatives.
+# - Un modèle VAR(2) ou plus pourrait être nécessaire.
+
+```{r var1}
+# stationnarité des résidus
+adf_test_y1 <- adf.test(residuals_var[,1])
+adf_test_y2 <- adf.test(residuals_var[,2])
+
+# **Résultats du test Dickey-Fuller :**
+print(adf_test_y1)
+print(adf_test_y2)
+```
+ **Observation :**
+ - la p-value est supérieure à 0.05, nous pouvons pas rejeter l'hypothèse de non-stationnarité des résidus.
+ - Cela signifie que les séries n'ont pas été correctement modélisées avec le VAR(1).
+
+
